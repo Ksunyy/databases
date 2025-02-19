@@ -14,23 +14,23 @@ Plan:
   - operator- () {} - unary
   - operator/ () {}
 3. Data bases (17th April)
-  Base Class:
+  - Base Class:
     - struct {name, polinom}
     - field - data
     - Functions:
       - add()
       - remove()
       - find()
-  Data bases + tests:
-   1. Array based (13th Murch)
-      - Sorted table - Chashin Vladimir
-      - Unsorted table - Shvetsova Ksenia
-  2. Hash-tables (3rd April)
-      - one - Chashin Vladimir
-      - second - Shvetsova Ksenia
-  3. Search-trees (17th April)
-      - Red-black - Shvetsova Ksenia
-      - Ml-tree - Chashin Vladimir
+  - Data bases + tests:
+    - Array based (13th Murch)
+        - Sorted table - Chashin Vladimir
+        - Unsorted table - Shvetsova Ksenia
+    - Hash-tables (3rd April)
+        - one - Chashin Vladimir
+        - second - Shvetsova Ksenia
+    - Search-trees (17th April)
+        - Red-black - Shvetsova Ksenia
+        - Ml-tree - Chashin Vladimir
 4. Interface (24th April)
       -SFML
 5. Report (31th April)
