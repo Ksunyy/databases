@@ -1,3 +1,5 @@
+#include <iostream>
+#include <queue>
 #include "Polinom.h"
 
 class BasePolinomStorage {
@@ -154,12 +156,16 @@ private:
         Node* left;
         Node* right;
         Entry data;
-        int heigth;
+        int height;
         Node() {
             left = nullptr;
             right = nullptr;
             data = Entry();
-            heigth = 0;
+            height = 0;
+        }
+        ~Node() {
+            left = nullptr;
+            right = nullptr;
         }
         int countHeigth() {
             int l,r;
@@ -167,13 +173,13 @@ private:
                 l = 0;
             }
             else {
-                l = this->left->heigth;
+                l = this->left->height;
             }
             if (this->right == nullptr) {
                 r = 0;
             }
             else {
-                r = this->right->heigth;
+                r = this->right->height;
             }
 
             return 1+std::max(r, l);
@@ -184,69 +190,106 @@ private:
                 l = 0;
             }
             else {
-                l = this->left->heigth;
+                l = this->left->height;
             }
             if (this->right == nullptr) {
                 r = 0;
             }
             else {
-                r = this->right->heigth;
+                r = this->right->height;
             }
             return l - r;
+        }
+        Node* leftTurn() {
+            std::cout << "Left turt in "<<this->data.name<<"\n";
+            Node* newRoot = this->right;  
+            Node* leftSubtree = newRoot->left;
+
+            newRoot->left = this;
+            this->right = leftSubtree;
+
+            this->height = this->countHeigth();
+            newRoot->height = newRoot->countHeigth();
+
+            return newRoot;
+        }
+
+        Node* rightTurn() {
+            std::cout << "Right turt in " << this->data.name << "\n";
+            Node* newRoot = this->left;  
+            Node* rightSubtree = newRoot->right;  
+
+            newRoot->right = this;
+            this->left = rightSubtree;
+
+            this->height = this->countHeigth();
+            newRoot->height = newRoot->countHeigth();
+
+            return newRoot;
+        }
+        Node* findMin() {
+            if (this->left == nullptr) {
+                return this;
+            }
+            Node* res = this->left->findMin();
+            return res;
         }
     };
     Node* root;
     
-    void recInsert(Node* node, Entry& d) {
-        if (node != root) {
-            if (d.name < node->data.name) {
-                if (node->left == nullptr) {
-                    node->left = new Node();
-                    node->left->data = d;
-                    return;
+    Node* recInsert(Node* node, Entry& d) {
+        if (d.name < node->data.name) {
+            if (node->left == nullptr) {
+                node->left = new Node();
+                node->left->data = d;
+                node->left->height = 1;
+                node->height = node->countHeigth();
+                return node;
+            }
+            Node* next = recInsert(node->left, d);
+            node->left = next;
+            node->height = node->countHeigth();
+            int balance = node->countBalance();
+            if (balance == 2) {
+                if (node->left->countBalance() == 1) {
+                    Node* ret = node->rightTurn();
+                    return ret;
                 }
-                recInsert(node->left, d);
-                node->heigth = node->countHeigth();
-                int balance = node->countBalance();
-                if (balance == -2) {
-                    if (node->left->countBalance() == -1) {
-                        node.leftTurn();
-
-                    }
-                    if (node->left->countBalance() == 1) {
-                        node->right.rightTurn();
-                        node.leftTurn();
-                    }
-                }
-                if (balance == 2) {
-                    if (node->left->countBalance() == 1) {
-                        Node* l = node->left;
-                        Node* r = node->right;
-                        node.rightTurn();
-                        l->heigth = l->countHeigth();
-                        r->heigth = l->countHeigth();
-                        node->heigth = node->countHeigth();
-
-
-                    }
-                    if (node->left->countBalance() == -1) {
-                        node->left.leftTurn();
-                        node.rightTurn();
-                    }
-
+                if (node->left->countBalance() == -1) {
+                    node->left = node->left->leftTurn();
+                    Node* ret = node->rightTurn();
+                    return ret;
                 }
             }
-            if (d.name > node->data.name) {
-                if (node->right == nullptr) {
-                    node->right = new Node();
-                    node->right->data = d;
-                    return;
+            return node;
+        }
+        if (d.name > node->data.name) {
+            if (node->right == nullptr) {
+                node->right = new Node();
+                node->right->data = d;
+                node->right->height = 1;
+                node->height = node->countHeigth();
+                return node;
+            }
+            Node* next = recInsert(node->right, d);
+            node->right = next;
+            node->height = node->countHeigth();
+            int balance = node->countBalance();
+            if (balance == -2) {
+                if (node->right->countBalance() == -1) {
+                    Node* ret = node->leftTurn();
+                    return ret;
                 }
-                recInsert(node->right, d);
+                if (node->right->countBalance() == 1) {
+                    node->right = node->right->rightTurn();
+                    Node* ret = node->leftTurn();
+                    return ret;
+                }
             }
-            if (d.name == node->data.name) {
-                throw "same name";
-            }
+            return node;
+        }
+        if (d.name == node->data.name) {
+            throw std::invalid_argument("Same name");
         }
     }
     int recDestructor(Node* node) {
@@ -259,6 +302,123 @@ private:
             delete node;
         }
     }
+    Node* recDel(Node* node, std::string name) {
+        if (node == nullptr) {
+            throw std::invalid_argument("No such name");
+        }
+        if (name < node->data.name) {
+            node->left = recDel(node->left, name);
+            node->height = node->countHeigth();
+            int balance = node->countBalance();
+            if (balance == 2) {
+                if (node->left->countBalance() == 1) {
+                    Node* ret = node->rightTurn();
+                    return ret;
+                }
+                if (node->left->countBalance() == -1) {
+                    node->left = node->left->leftTurn();
+                    Node* ret = node->rightTurn();
+                    return ret;
+                }
+            }
+            if (balance == -2) {
+                if (node->right->countBalance() == -1) {
+                    Node* ret = node->leftTurn();
+                    return ret;
+                }
+                if (node->right->countBalance() == 1) {
+                    node->right = node->right->rightTurn();
+                    Node* ret = node->leftTurn();
+                    return ret;
+                }
+            }
+            return node;
+        }
+        if (name > node->data.name) {
+            node->right = recDel(node->right, name);
+            node->height = node->countHeigth();
+            int balance = node->countBalance();
+            if (balance == 2) {
+                if (node->left->countBalance() == 1) {
+                    Node* ret = node->rightTurn();
+                    return ret;
+                }
+                if (node->left->countBalance() == -1) {
+                    node->left = node->left->leftTurn();
+                    Node* ret = node->rightTurn();
+                    return ret;
+                }
+            }
+            if (balance == -2) {
+                if (node->right->countBalance() == -1) {
+                    Node* ret = node->leftTurn();
+                    return ret;
+                }
+                if (node->right->countBalance() == 1) {
+                    node->right = node->right->rightTurn();
+                    Node* ret = node->leftTurn();
+                    return ret;
+                }
+            }
+            return node;
+        }
+        if (name == node->data.name) {
+            int k = 0;
+            if (node->left != nullptr) {
+                k += 1;
+            }
+            if (node->right != nullptr) {
+                k += 1;
+            }
+            if (k == 0) {
+                delete node;
+                return nullptr;
+            }
+            if (node->left == nullptr) {
+                Node* temp = node->right;
+                delete node;
+                return temp;
+            }
+            if (node->right == nullptr) {
+                Node* temp = node->left;
+                delete node;
+                return temp;
+            }
+            if (k == 2) {
+                Node* minInRight = node->right->findMin();
+                node->data.name = minInRight->data.name;
+                node->data.data = minInRight->data.data;
+                node->right= recDel(node->right, minInRight->data.name);
+
+                node->height = node->countHeigth();
+                int balance = node->countBalance();
+                if (balance == 2) {
+                    if (node->left->countBalance() == 1) {
+                        Node* ret = node->rightTurn();
+                        return ret;
+                    }
+                    if (node->left->countBalance() == -1) {
+                        node->left = node->left->leftTurn();
+                        Node* ret = node->rightTurn();
+                        return ret;
+                    }
+                }
+                if (balance == -2) {
+                    if (node->right->countBalance() == -1) {
+                        Node* ret = node->leftTurn();
+                        return ret;
+                    }
+                    if (node->right->countBalance() == 1) {
+                        node->right = node->right->rightTurn();
+                        Node* ret = node->leftTurn();
+                        return ret;
+                    }
+                }
+                return node;
+            }
+        }
+    }
+
 public:
     AVLtree() {
         root = nullptr;
@@ -275,10 +435,50 @@ public:
             temp = nullptr;
             return 0;
         }
-        recInsert(root, d);
+        root = recInsert(root, d);
         return 0;
     }
-    void print() {
+    Polinom find(std::string name) {
+        Node* cur = root;
+        while (cur != nullptr) {
+            if (name > cur->data.name) {
+                cur = cur->right;
+            }
+            if (name < cur->data.name) {
+                cur = cur->left;
+            }
+            if (name == cur->data.name) {
+                return cur->data.data;
+            }
+        }
+        throw std::invalid_argument("No such name");
+    }
 
+    int remove(std::string name) {
+        root = recDel(root, name);
+        return 0;
+    }
+
+    void printTreeByLevels() {
+        if (!root) return; // Проверка на пустое дерево
+
+        std::queue<Node*> q;       // Очередь для обхода дерева
+        q.push(root);         // Добавляем корень в очередь
+
+        while (!q.empty()) {
+            int levelSize = q.size(); // Количество узлов на текущем уровне
+
+            for (int i = 0; i < levelSize; ++i) {
+                Node* current = q.front(); // Извлекаем узел из очереди
+                q.pop();
+
+                std::cout << current->data.name << " "; // Выводим значение узла
+
+                // Добавляем дочерние узлы в очередь
+                if (current->left) q.push(current->left);
+                if (current->right) q.push(current->right);
+            }
+            std::cout << std::endl; // Переход на новую строку после каждого уровня
+        }
     }
 };
