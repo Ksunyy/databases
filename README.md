@@ -27,10 +27,10 @@ Plan:
         - Unsorted table - Shvetsova Ksenia
      - Search-trees (17th April)
         - Red-black - Shvetsova Ksenia
-        - Ml-tree - Chashin Vladimir
+        - AVL-tree - Chashin Vladimir
     - Hash-tables (3rd April)
-        - one - Chashin Vladimir
-        - second - Shvetsova Ksenia
+        - Chaining method - Chashin Vladimir
+        - Open Addressing method - Shvetsova Ksenia
    
 4. Interface (24th April)
       -SFML
