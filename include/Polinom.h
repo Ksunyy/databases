@@ -3,6 +3,8 @@
 #include "tlist.h"
 
 
+#pragma once
+
 struct Monom {
 		double k;
 		int degree;
@@ -77,7 +79,7 @@ struct Monom {
 		bool operator!=(const Monom& monom) const {
 			return !(*this == monom);
 		}
-		Monom& operator*(const Monom& monom) const {
+		Monom operator*(const Monom& monom) const {
 			int lx = degree / 100;
 			int ly = (degree / 10) % 10;
 			int lz = degree % 10;

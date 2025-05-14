@@ -1,4 +1,5 @@
 ﻿#include <iostream>
+#pragma once
 template<typename T>
 class Tlist {
 protected:
@@ -67,6 +68,10 @@ public:
 		//std::cout << "List Destructor\n";
 	};
 	Tlist(const Tlist& list) {
+		if (list.first == nullptr) {
+			first = nullptr;
+			return;
+		}
 		Node* current_old = list.first;
 		Node* temp = new Node();
 		temp->data = current_old->data;
@@ -161,6 +166,21 @@ public:
 		}
 		t.node->data = value;
 	}
+	iterator insert_back(T value) {
+		Node* temp = new Node();
+		temp->data = value;
+		temp->next = nullptr;
+		Node* cur = first;
+		if (cur != nullptr) {
+			while (cur->next != nullptr) {
+				cur = cur->next;
+			}
+			cur->next = temp;
+		}
+		else {
+			Throw "sfin";
+		}
+	}
 	iterator insert(T value, iterator prev) {
 		Node* temp = new Node();
 		temp->data = value;
@@ -184,13 +204,24 @@ public:
 		}
 		return first;
 	};
+	void err(Node* cur) {
+		if (cur == nullptr) {
+			throw "egi";
+		}
+		Node* current = first;
+		while (current->next != cur) {
+			current = current->next;
+		}
+		current->next = cur->next;
+		delete cur;
+		}
 	iterator errase_front() {
 		Node* temp = first;
 		first = first->next;
 		delete temp;
 		return iterator(first);
 	};
-	iterator find(T value) {
+	Node* find(T value) {
 		Node* current = first;
 		Node* res = nullptr;
 		while (current != nullptr) {
@@ -199,7 +230,7 @@ public:
 			}
 			current = current->next;
 		}
-		return iterator(res);
+		return res;
 	};//O(n)
 	iterator find_ptr(int index) {
 		if (index<0 || index>=this->size()) {
